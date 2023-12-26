@@ -23,9 +23,8 @@ class Donalves (object):
         return number
     
     def prng_key_schedule(self, key):
-        key = key << 2
-        return key
-        
+        shifted_key = key[2:] + b'\x00\x00'  # Shift the key left by 2 bytes
+        return shifted_key
     
     def SPN(self, number_of_rounds):
         pass
