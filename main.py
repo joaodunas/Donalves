@@ -37,17 +37,41 @@ class Donalves (object):
     def SPN(self, number_of_rounds):
         pass
 
-    def FN(self, number_of_rounds):
+    def FN(self, start_round, number_of_rounds):
+        j = 0
         for block in self.blocks:
             ##split block in 2
             left, right = block[:8], block[8:]
             ##apply Feistel Network
             for i in range(number_of_rounds):
-                
-                pass
-            
-            pass
+                new_right = self.xor(left, right)
+                left = right
+                right = new_right
+
+            ##join blocks
+            block = left + right
+            self.blocks[j] = block
+            j += 1
+
+    def IFN(self, number_of_rounds):
+        ##inverse Feistel Network
+        j = 0
+        for block in self.blocks:
+            ##split block in 2
+            left, right = block[:8], block[8:]
+            ##apply Feistel Network
+            for i in range(number_of_rounds):
+                new_left = self.xor(left, right)
+                right = left
+                left = new_left
+
+            ##join blocks
+            block = left + right
+            self.blocks[j] = block
+            j += 1
         
+    def xor(self, a, b):
+        return bytes([x ^ y for x, y in zip(a, b)])
 
 
     def encrypt(self):
@@ -76,12 +100,12 @@ class Donalves (object):
 
 
 def main():
-    print("Hello World!")
     key = "ArROm+4MU+Sefz3r2h8BvhVMzptfZIxZ"
     donalves = Donalves(msg="Hello World!", key=key)
-    print(donalves.key_sched)
-    for i in donalves.key_sched:
-        print(len(i))
+    donalves.FN(0, 2)
+    print(donalves.blocks)
+    donalves.IFN(2)
+    print(donalves.blocks)
     
     
 
