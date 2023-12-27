@@ -39,6 +39,11 @@ class Donalves (object):
         for i in range(len(self.blocks)):
             self.blocks[i] = spn.encrypt(self.blocks)
 
+    def ISPN(self, number_of_rounds):
+        spn = cryptanalysis.SPN(self.sbox, self.pbox, self.key, number_of_rounds)
+        for i in range(len(self.blocks)):
+            self.blocks[i] = spn.decrypt(self.blocks)
+
     def FN(self, start_round, number_of_rounds):
         j = 0
         for block in self.blocks:
@@ -95,6 +100,34 @@ class Donalves (object):
         ##do last key mixing 
         for block in self.blocks:
             block = self.xor(block, self.key_sched[-1])
+
+
+    def decrypt(self, key):
+        pass
+        
+        self.key = key
+        random.seed(key)
+        self.key_sched = self.keyschedule()
+        ##do last key mixing
+        for block in self.blocks:
+            block = self.xor(block, self.key_sched[-1])
+        #see what operation will run first
+        operation = self.random_number(1, True)
+        total_rounds = 0
+        while total_rounds < 13:
+            n_rounds = self.random_number(14 - total_rounds)
+            total_rounds += n_rounds
+            if operation == 0:
+                operation = 1
+                self.IFN(n_rounds)
+            else:
+                operation = 0
+                self.ISPN(n_rounds)
+        
+        
+        
+
+    
         
 
 
