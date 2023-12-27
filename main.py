@@ -6,11 +6,19 @@ import cryptanalysis
 ##TODO mudar o metodo de pseudo random number generation para um mais seguro com seed para se poder desencriptar
 
 class Donalves (object):
-    def __init__(self, message, key):
-        self.message = message 
+    def __init__(self, msg, key):
+        self.msg = msg.encode()
         self.key = key.encode() ##key needs to have 256 bits/ AES also doens't work with sizes different than 128, 192, 256
         random.seed(key)
 
+
+    def slice_in_blocks(self):
+        ##slice in 16 byte blocks
+        blocks = [self.msg[i:i+16] for i in range(0, len(self.msg), 16)]
+        ##if last block is not 16 bytes, fill with 1s if there is 1 byte missing, 2 if there are 2 bytes missing and so on
+        if len(blocks[-1]) != 16:
+            missing_bytes = 16 - len(blocks[-1])
+            blocks[-1] += bytes([missing_bytes] * missing_bytes)
 
 
     def keyschedule(self):
@@ -59,9 +67,13 @@ class Donalves (object):
 
 def main():
     print("Hello World!")
-    key = "ArROm+4MU+Sefz3r2h8BvhVMzptfZISZ"
+    key = "ArROm+4MU+Sefz3r2h8BvhVMzptfZIxZ"
     donalves = Donalves(message="Hello World!", key=key)
-    donalves.encrypt()
+
+    
+    
+
+
     
 
 if __name__ == "__main__":
