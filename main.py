@@ -1,5 +1,5 @@
 import random
-import aeskeyschedule
+import aeskeyschedule ##pip install aeskeyschedule
 
 
 ##TODO mudar o metodo de pseudo random number generation para um mais seguro com seed para se poder desencriptar
