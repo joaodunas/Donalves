@@ -84,17 +84,16 @@ class Donalves (object):
             if operation == 0: #SPN
                 operation = 1 #switch operation
                 self.SPN(n_rounds)
-            else: #FN
+            else: #FN 
                 operation = 0  #switch operation
                 self.FN(n_rounds)
                 
             print("Total rounds: " + str(total_rounds))
 
-        ##apply operation
-        if operation == 0:
-            pass
-        else:
-            pass
+        ##do last key mixing 
+        for block in self.blocks:
+            block = self.xor(block, self.key_sched[-1])
+        
 
 
 
