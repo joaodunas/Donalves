@@ -10,6 +10,8 @@ class Donalves (object):
         self.msg = msg.encode()
         self.key = key.encode() ##key needs to have 256 bits/ AES also doens't work with sizes different than 128, 192, 256
         random.seed(key)
+        self.blocks = self.slice_in_blocks()
+        self.key_sched = self.keyschedule()
 
 
     def slice_in_blocks(self):
@@ -19,7 +21,7 @@ class Donalves (object):
         if len(blocks[-1]) != 16:
             missing_bytes = 16 - len(blocks[-1])
             blocks[-1] += bytes([missing_bytes] * missing_bytes)
-
+        return blocks
 
     def keyschedule(self):
         return aeskeyschedule.key_schedule(self.key)
@@ -28,7 +30,7 @@ class Donalves (object):
     def random_number(self, bellow, op=False):
         if op:
             return random.randint(0,bellow)
-        return random.randint(1, bellow)
+        return random.randint(2, bellow) #2 because we need at least 2 rounds for Feistel Network
     
     
     
@@ -36,7 +38,16 @@ class Donalves (object):
         pass
 
     def FN(self, number_of_rounds):
-        pass
+        for block in self.blocks:
+            ##split block in 2
+            left, right = block[:8], block[8:]
+            ##apply Feistel Network
+            for i in range(number_of_rounds):
+                
+                pass
+            
+            pass
+        
 
 
     def encrypt(self):
@@ -48,12 +59,11 @@ class Donalves (object):
             total_rounds += n_rounds
             if operation == 0: #SPN
                 operation = 1 #switch operation
-                
-                pass
+                self.SPN(n_rounds)
             else: #FN
                 operation = 0  #switch operation
+                self.FN(n_rounds)
                 
-                pass
             print("Total rounds: " + str(total_rounds))
 
         ##apply operation
@@ -68,8 +78,10 @@ class Donalves (object):
 def main():
     print("Hello World!")
     key = "ArROm+4MU+Sefz3r2h8BvhVMzptfZIxZ"
-    donalves = Donalves(message="Hello World!", key=key)
-
+    donalves = Donalves(msg="Hello World!", key=key)
+    print(donalves.key_sched)
+    for i in donalves.key_sched:
+        print(len(i))
     
     
 
