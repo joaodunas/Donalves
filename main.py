@@ -1,6 +1,6 @@
-import os
 import random
-import hmac_dbrg
+import aeskeyschedule ##pip install aeskeyschedule
+
 import cryptanalysis
 
 ##TODO mudar o metodo de pseudo random number generation para um mais seguro com seed para se poder desencriptar
@@ -8,24 +8,21 @@ import cryptanalysis
 class Donalves (object):
     def __init__(self, message, key):
         self.message = message 
-        self.key = key ##key needs to have 256 bits/ AES also doens't work with sizes different than 128, 192, 256
+        self.key = key.encode() ##key needs to have 256 bits/ AES also doens't work with sizes different than 128, 192, 256
+        random.seed(key)
 
 
 
+    def keyschedule(self):
+        return aeskeyschedule.key_schedule(self.key)
 
-    def sub_key(self, key):
-        pass
 
-    def random_number(self, bellow, key):
-        dbrg = hmac_dbrg.HMAC_DRBG(key)
-        bellow = hex(bellow)
-        number = dbrg.generate(1)
-        number = ord(number) & int(bellow, 16) ## this allows to limit the maximum value
-        return number
+    def random_number(self, bellow, op=False):
+        if op:
+            return random.randint(0,bellow)
+        return random.randint(1, bellow)
     
-    def prng_key_schedule(self, key):
-        shifted_key = key[2:] + b'\x00\x00'  # Shift the key left by 2 bytes
-        return shifted_key
+    
     
     def SPN(self, number_of_rounds):
         pass
@@ -36,12 +33,10 @@ class Donalves (object):
 
     def encrypt(self):
         #see what operation will run first
-        operation = self.random_number(2, self.key)
-        key = self.key
+        operation = self.random_number(1, True)
         total_rounds = 0
         while total_rounds < 13:
-            key = self.prng_key_schedule(key)
-            n_rounds = self.random_number(14 - total_rounds, key)
+            n_rounds = self.random_number(14 - total_rounds)
             total_rounds += n_rounds
             if operation == 0: #SPN
                 operation = 1 #switch operation
@@ -64,8 +59,7 @@ class Donalves (object):
 
 def main():
     print("Hello World!")
-    key = os.urandom(64)
-    print(key)
+    key = "ArROm+4MU+Sefz3r2h8BvhVMzptfZISZ"
     donalves = Donalves(message="Hello World!", key=key)
     donalves.encrypt()
     
