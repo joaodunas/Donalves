@@ -1,6 +1,7 @@
 import os
 import random
 import hmac_dbrg
+import cryptanalysis
 
 ##TODO mudar o metodo de pseudo random number generation para um mais seguro com seed para se poder desencriptar
 
