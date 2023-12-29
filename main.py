@@ -181,8 +181,8 @@ class Donalves (object):
                 
             print("Total rounds: " + str(total_rounds))
             '''
-            print("Total rounds: " + str(total_rounds))
-            print("Number of rounds: " + str(n_rounds))
+           ## print("Total rounds: " + str(total_rounds))
+            ###print("Number of rounds: " + str(n_rounds))
             self.FN(total_rounds, n_rounds)
             total_rounds += n_rounds
 
