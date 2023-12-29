@@ -161,7 +161,7 @@ class Donalves (object):
     def xor(self, a, b):
         return bytes([x ^ y for x, y in zip(a, b)])
 
-
+    ##TODO mudar o encrypt p dar return do cypher text
     def encrypt(self):
         #see what operation will run first
         operation = self.random_number(1, True)
@@ -191,6 +191,8 @@ class Donalves (object):
             block = self.xor(block, self.key_sched[-1])
 
 
+    
+    ##TODO mudar o decrypt p receber o encrypted text e nao o self.blocks
     def decrypt(self, key):
         self.key = key.encode()
         random.seed(key)
