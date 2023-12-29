@@ -1,3 +1,4 @@
+import secrets
 import random
 import aeskeyschedule ##pip install aeskeyschedule
 
@@ -44,37 +45,117 @@ class Donalves (object):
         for i in range(len(self.blocks)):
             self.blocks[i] = spn.decrypt(self.blocks)
 
-    def FN(self, start_round, number_of_rounds):
-        j = 0
+    def expand_to_128(self, block): ##block comes with a size of 64 bits (8 bytes)
+        #transform block from bytes to bits´
+        #print("before expand")
+        #print(block)
+        #print(len(block))
+        ##block = ''.join(format(x, '08b') for x in block)  ##08b means 8 bits for each character
+        #fill block with 0s to have 128 bits
+        block = block + bytes([0] * 8)
+        return block
+       
+    
+        
+
+
+            
+    des_SBOX = [[14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6 ,12, 5, 9, 0, 7],
+                [0, 15, 7, 4, 14 ,2 ,13 ,1 ,10 ,6 ,12 ,11 ,9 ,5 ,3 ,8],
+                [4, 1 ,14 ,8 ,13 ,6 ,2 ,11 ,15 ,12 ,9 ,7 ,3 ,10 ,5 ,0],
+                [15 ,12 ,8 ,2 ,4 ,9 ,1 ,7 ,5 ,11 ,3 ,14 ,10 ,0 ,6 ,13]]
+    
+
+
+    def back_to_64(self, block): ##block comes with a size of 128 bits (16 bytes)
+        #transform block from bytes to bits
+        #print("before back")
+        #print(block)
+       # print(len(block))
+        #block = ''.join(format(x, '08b') for x in block)
+        ##split block in blocks of 8 bits
+        #remove last 64 bits
+        block = block[:8]
+        return block
+        
+        
+       
+
+
+    def FN(self, start_round, number_of_rounds): ##FIX esta a dar mais bytes no fim que no inicio
+        i = 0
         for block in self.blocks:
-            ##split block in 2
-            left, right = block[:8], block[8:]
-            ##apply Feistel Network
-            for i in range(number_of_rounds):
-                new_right = self.xor(left, right)
+            for j in range(number_of_rounds):
+                ##split block in 2
+                left, right = block[:8], block[8:] ##Vai ter 64 bits de cada lado e a key é de 128 bits 
+                
+                ## maybe expand the right block to 128 bits
+                ## then XOR with key and then apply SBOX to bring the size back to 64 bits
+                expanded_right = self.expand_to_128(right)
+               
+                expanded_right = self.xor(expanded_right, self.key_sched[start_round+j])
+                #orignal_right = self.xor(expanded_right, self.key_sched[start_round+j])
+                
+                ##now apply SBox to bring the size back to 64 bits
+                expanded_right = self.back_to_64(expanded_right)
+                
+                new_right = self.xor(left, expanded_right)
                 left = right
                 right = new_right
 
-            ##join blocks
-            block = left + right
-            self.blocks[j] = block
-            j += 1
+                ##join blocks
+                block = left + right
+                self.blocks[i] = block
+                
+            i += 1
+                
+        
+        '''
+        ##create result array with size of number of rounds
+        result = [None] * number_of_rounds
+        print(result)
+        for i in range(number_of_rounds):
+            for block in self.blocks:
+                ##split block in 2
+                left, right = block[:8], block[8:]
+                ## maybe expand the right block to 128 bits
+                ## then XOR with key and then apply SBOX to bring the size back to 64 bits
+                expanded_right = self.expand_to_128(right)
+                expanded_right = self.xor(expanded_right, self.key_sched[start_round+i])
+                ##now apply SBox to bring the size back to 64 bits
+                expanded_right = self.back_to_64(expanded_right)
+                right = expanded_right
 
-    def IFN(self, number_of_rounds):
+                ##join blocks
+                block = left + right
+                result[start_round+i] = block
+                print(result)
+        '''
+        
+
+
+    def IFN(self, start_round, number_of_rounds):
         ##inverse Feistel Network
         j = 0
         for block in self.blocks:
-            ##split block in 2
-            left, right = block[:8], block[8:]
-            ##apply Feistel Network
             for i in range(number_of_rounds):
-                new_left = self.xor(left, right)
+                ##split block in 2
+                left, right = block[:8], block[8:]
+                ##apply Feistel Network
+                ##expand left
+                expanded_left = self.expand_to_128(left)
+                ##XOR with key
+                expanded_left = self.xor(expanded_left, self.key_sched[start_round-i-1])
+                ##bring back to 64 bits
+                expanded_left = self.back_to_64(expanded_left)
+
+                new_left = self.xor(expanded_left, right)
                 right = left
                 left = new_left
 
-            ##join blocks
-            block = left + right
-            self.blocks[j] = block
+                ##join blocks
+                block = left + right
+                self.blocks[j] = block
             j += 1
         
     def xor(self, a, b):
@@ -103,7 +184,7 @@ class Donalves (object):
 
 
     def decrypt(self, key):
-        pass
+        
         
         self.key = key
         random.seed(key)
@@ -135,11 +216,16 @@ class Donalves (object):
 
 def main():
     key = "ArROm+4MU+Sefz3r2h8BvhVMzptfZIxZ"
-    donalves = Donalves(msg="Hello World!", key=key)
+    donalves = Donalves(msg="Hello world my name is joao", key=key)
+    ##print(donalves.blocks)
+    #donalves.back_to_64(donalves.expand_to_128(b'12345678'))
+    print(donalves.blocks)
     donalves.FN(0, 2)
     print(donalves.blocks)
-    donalves.IFN(2)
+    donalves.IFN(2, 2)
     print(donalves.blocks)
+
+
     
     
 
