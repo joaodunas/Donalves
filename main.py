@@ -168,7 +168,10 @@ class Donalves (object):
         total_rounds = 0
         while total_rounds < 13:
             n_rounds = self.random_number(14 - total_rounds)
-            total_rounds += n_rounds
+            
+            
+            
+            '''
             if operation == 0: #SPN
                 operation = 1 #switch operation
                 self.SPN(n_rounds)
@@ -177,6 +180,11 @@ class Donalves (object):
                 self.FN(n_rounds)
                 
             print("Total rounds: " + str(total_rounds))
+            '''
+            print("Total rounds: " + str(total_rounds))
+            print("Number of rounds: " + str(n_rounds))
+            self.FN(total_rounds, n_rounds)
+            total_rounds += n_rounds
 
         ##do last key mixing 
         for block in self.blocks:
@@ -184,9 +192,7 @@ class Donalves (object):
 
 
     def decrypt(self, key):
-        
-        
-        self.key = key
+        self.key = key.encode()
         random.seed(key)
         self.key_sched = self.keyschedule()
         ##do last key mixing
@@ -197,13 +203,17 @@ class Donalves (object):
         total_rounds = 0
         while total_rounds < 13:
             n_rounds = self.random_number(14 - total_rounds)
-            total_rounds += n_rounds
+            
+            self.IFN(14-total_rounds, n_rounds)
+            '''
             if operation == 0:
                 operation = 1
                 self.IFN(n_rounds)
             else:
                 operation = 0
                 self.ISPN(n_rounds)
+            '''
+            total_rounds += n_rounds
         
         
         
@@ -217,14 +227,16 @@ class Donalves (object):
 def main():
     key = "ArROm+4MU+Sefz3r2h8BvhVMzptfZIxZ"
     donalves = Donalves(msg="Hello world my name is joao", key=key)
+    #print(str(donalves.key_sched) + " "+ str(len(donalves.key_sched)))
     ##print(donalves.blocks)
     #donalves.back_to_64(donalves.expand_to_128(b'12345678'))
+    
     print(donalves.blocks)
-    donalves.FN(0, 2)
+    donalves.encrypt()
     print(donalves.blocks)
-    donalves.IFN(2, 2)
+    donalves.decrypt(key)
     print(donalves.blocks)
-
+    
 
     
     
