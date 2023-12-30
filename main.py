@@ -54,15 +54,60 @@ class Donalves (object):
         return random.randint(2, bellow) #2 because we need at least 2 rounds for Feistel Network
     
 
-    def SPN(self, number_of_rounds):
-        spn = cryptanalysis.SPN(self.sbox, self.pbox, self.key, number_of_rounds)
+    def SPN(self, start_round, number_of_rounds):
         for i in range(len(self.blocks)):
-            self.blocks[i] = spn.encrypt(self.blocks)
+            for j in range(number_of_rounds):
 
-    def ISPN(self, number_of_rounds):
-        spn = cryptanalysis.SPN(self.sbox, self.pbox, self.key, number_of_rounds)
+                # Start the round by mixing the subkey
+                self.blocks[i] = self.xor(self.blocks[i], self.key_sched[start_round + j])
+                
+                # Apply the S-box
+                self.blocks[i] = bytes([self.sbox[b] for b in self.blocks[i]])
+                                
+                block = self.blocks[i]
+                # Apply the P-box
+                permuted_block = bytearray(len(block))
+                
+                for byte_index in range(len(block)):
+                    # Extract the current byte from the block
+                    current_byte = block[byte_index]
+
+                    # Apply the P-box to each bit in the byte
+                    for bit_index in range(8):
+                        source_bit = (current_byte >> bit_index) & 1
+                        target_bit_index = self.pbox[byte_index * 8 + bit_index]
+                        permuted_block[target_bit_index // 8] |= source_bit << (target_bit_index % 8)
+
+                self.blocks[i] = bytes(permuted_block)
+
+            #Apply the last key mixing
+            self.blocks[i] = self.xor(self.blocks[i], self.key_sched[-1])
+
+    def ISPN(self, start_round, number_of_rounds):
         for i in range(len(self.blocks)):
-            self.blocks[i] = spn.decrypt(self.blocks)
+            self.blocks[i] = self.xor(self.blocks[i], self.key_sched[-1])
+            
+            for j in range(number_of_rounds):
+                                
+                block = self.blocks[i]
+                
+                # Apply the inverse P-box
+                inverse_permuted_block = bytearray(len(block))
+
+                for byte_index in range(len(block)):
+                    current_byte = self.blocks[i][byte_index]
+
+                    # Apply the inverse P-box to each bit in the byte
+                    for bit_index in range(8):
+                        source_bit = (current_byte >> bit_index) & 1
+                        target_bit_index = self.pinv[byte_index * 8 + bit_index]
+                        inverse_permuted_block[target_bit_index // 8] |= source_bit << (target_bit_index % 8)
+
+                self.blocks[i] = bytes(inverse_permuted_block)
+                                
+                self.blocks[i] = bytes([self.sinv[b] for b in self.blocks[i]])
+                
+                self.blocks[i] = self.xor(self.blocks[i], self.key_sched[start_round - j - 1])
 
     def expand_to_128(self, block): ##block comes with a size of 64 bits (8 bytes)
         #transform block from bytes to bits´
