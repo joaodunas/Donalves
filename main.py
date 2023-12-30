@@ -2,8 +2,6 @@ import secrets
 import random
 import aeskeyschedule ##pip install aeskeyschedule
 
-import cryptanalysis
-
 ##TODO mudar o metodo de pseudo random number generation para um mais seguro com seed para se poder desencriptar
 
 class Donalves (object):
@@ -13,9 +11,16 @@ class Donalves (object):
         random.seed(key)
         self.blocks = self.slice_in_blocks()
         self.key_sched = self.keyschedule()
+        
         self.sbox = [99, 124, 119, 123, 242, 107, 111, 197, 48, 1, 103, 43, 254, 215, 171, 118, 202, 130, 201, 125, 250, 89, 71, 240, 173, 212, 162, 175, 156, 164, 114, 192, 183, 253, 147, 38, 54, 63, 247, 204, 52, 165, 229, 241, 113, 216, 49, 21, 4, 199, 35, 195, 24, 150, 5, 154, 7, 18, 128, 226, 235, 39, 178, 117, 9, 131, 44, 26, 27, 110, 90, 160, 82, 59, 214, 179, 41, 227, 47, 132, 83, 209, 0, 237, 32, 252, 177, 91, 106, 203, 190, 57, 74, 76, 88, 207, 208, 239, 170, 251, 67, 77, 51, 133, 69, 249, 2, 127, 80, 60, 159, 168, 81, 163, 64, 143, 146, 157, 56, 245, 188, 182, 218, 33, 16, 255, 243, 210, 205, 12, 19, 236, 95, 151, 68, 23, 196, 167, 126, 61, 100, 93, 25, 115, 96, 129, 79, 220, 34, 42, 144, 136, 70, 238, 184, 20, 222, 94, 11, 219, 224, 50, 58, 10, 73, 6, 36, 92, 194, 211, 172, 98, 145, 149, 228, 121, 231, 200, 55, 109, 141, 213, 78, 169, 108, 86, 244, 234, 101, 122, 174, 8, 186, 120, 37, 46, 28, 166, 180, 198, 232, 221, 116, 31, 75, 189, 139, 138, 112, 62, 181, 102, 72, 3, 246, 14, 97, 53, 87, 185, 134, 193, 29, 158, 225, 248, 152, 17, 105, 217, 142, 148, 155, 30, 135, 233, 206, 85, 40, 223, 140, 161, 137, 13, 191, 230, 66, 104, 65, 153, 45, 15, 176, 84, 187, 22]
-        self.pbox = [119, 68, 62, 33, 126, 35, 44, 75, 89, 117, 100, 6, 103, 11, 110, 21, 101, 58, 66, 48, 28, 121, 26, 82, 76, 98, 116, 63, 78, 53, 24, 60, 74, 80, 92, 115, 1, 71, 47, 41, 56, 57, 65, 81, 67, 86, 94, 111, 125, 61, 64, 49, 2, 8, 14, 127, 25, 55, 72, 39, 108, 83, 59, 69, 19, 107, 112, 118, 7, 45, 90, 50, 18, 10, 17, 22, 97, 54, 16, 38, 106, 99, 9, 37, 102, 70, 52, 4, 31, 12, 34, 93, 51, 30, 36, 32, 20, 84, 46, 91, 95, 88, 23, 87, 122, 120, 29, 5, 13, 105, 15, 73, 3, 104, 109, 79, 0, 27, 113, 77, 124, 43, 42, 40, 123, 114, 96, 85]
+        self.sinv = [self.sbox.index(i) for i in range(len(self.sbox))]
 
+        self.pbox = [119, 68, 62, 33, 126, 35, 44, 75, 89, 117, 100, 6, 103, 11, 110, 21, 101, 58, 66, 48, 28, 121, 26, 82, 76, 98, 116, 63, 78, 53, 24, 60, 74, 80, 92, 115, 1, 71, 47, 41, 56, 57, 65, 81, 67, 86, 94, 111, 125, 61, 64, 49, 2, 8, 14, 127, 25, 55, 72, 39, 108, 83, 59, 69, 19, 107, 112, 118, 7, 45, 90, 50, 18, 10, 17, 22, 97, 54, 16, 38, 106, 99, 9, 37, 102, 70, 52, 4, 31, 12, 34, 93, 51, 30, 36, 32, 20, 84, 46, 91, 95, 88, 23, 87, 122, 120, 29, 5, 13, 105, 15, 73, 3, 104, 109, 79, 0, 27, 113, 77, 124, 43, 42, 40, 123, 114, 96, 85]
+        self.pinv = [self.pbox.index(i) for i in range(len(self.pbox))]
+        
+        #TODO mudar a pbox para uma mais segura, e tentar implementar nos bits e não nos bytes
+        
+        
     def slice_in_blocks(self):
         ##slice in 16 byte blocks
         blocks = [self.msg[i:i+16] for i in range(0, len(self.msg), 16)]
@@ -24,6 +29,7 @@ class Donalves (object):
             missing_bytes = 16 - len(blocks[-1])
             blocks[-1] += bytes([missing_bytes] * missing_bytes)
         return blocks
+
 
     def reconstruct_message(self, encoding='utf-8'):
         original_msg = b''  # Initialize an empty bytes object
@@ -42,8 +48,9 @@ class Donalves (object):
             return decoded_msg
         except UnicodeDecodeError:
             print("Error decoding message. Check the encoding.")
-            return None
-        
+            return "Error decoding message. Check the encoding."
+    
+    
     def keyschedule(self):
         return aeskeyschedule.key_schedule(self.key)
 
@@ -53,7 +60,7 @@ class Donalves (object):
             return random.randint(0,bellow)
         return random.randint(2, bellow) #2 because we need at least 2 rounds for Feistel Network
     
-
+    
     def SPN(self, start_round, number_of_rounds):
         for i in range(len(self.blocks)):
             for j in range(number_of_rounds):
@@ -82,7 +89,8 @@ class Donalves (object):
 
             #Apply the last key mixing
             self.blocks[i] = self.xor(self.blocks[i], self.key_sched[-1])
-
+    
+    
     def ISPN(self, start_round, number_of_rounds):
         for i in range(len(self.blocks)):
             self.blocks[i] = self.xor(self.blocks[i], self.key_sched[-1])
@@ -108,6 +116,8 @@ class Donalves (object):
                 self.blocks[i] = bytes([self.sinv[b] for b in self.blocks[i]])
                 
                 self.blocks[i] = self.xor(self.blocks[i], self.key_sched[start_round - j - 1])
+                    
+
 
     def expand_to_128(self, block): ##block comes with a size of 64 bits (8 bytes)
         #transform block from bytes to bits´
@@ -143,9 +153,6 @@ class Donalves (object):
         return block
         
         
-       
-
-
     def FN(self, start_round, number_of_rounds): ##FIX esta a dar mais bytes no fim que no inicio
         i = 0
         for block in self.blocks:
@@ -172,32 +179,8 @@ class Donalves (object):
                 self.blocks[i] = block
                 
             i += 1
-                
         
-        '''
-        ##create result array with size of number of rounds
-        result = [None] * number_of_rounds
-        print(result)
-        for i in range(number_of_rounds):
-            for block in self.blocks:
-                ##split block in 2
-                left, right = block[:8], block[8:]
-                ## maybe expand the right block to 128 bits
-                ## then XOR with key and then apply SBOX to bring the size back to 64 bits
-                expanded_right = self.expand_to_128(right)
-                expanded_right = self.xor(expanded_right, self.key_sched[start_round+i])
-                ##now apply SBox to bring the size back to 64 bits
-                expanded_right = self.back_to_64(expanded_right)
-                right = expanded_right
-
-                ##join blocks
-                block = left + right
-                result[start_round+i] = block
-                print(result)
-        '''
         
-
-
     def IFN(self, start_round, number_of_rounds):
         ##inverse Feistel Network
         j = 0
@@ -230,24 +213,18 @@ class Donalves (object):
         #see what operation will run first
         operation = self.random_number(1, True)
         total_rounds = 0
+        print("ENCRYPTING")
         while total_rounds < 13:
             n_rounds = self.random_number(14 - total_rounds)
             
-            
-            
-            '''
             if operation == 0: #SPN
                 operation = 1 #switch operation
-                self.SPN(n_rounds)
+                self.SPN(total_rounds, n_rounds)
+                
             else: #FN 
                 operation = 0  #switch operation
-                self.FN(n_rounds)
-                
-            print("Total rounds: " + str(total_rounds))
-            '''
-           ## print("Total rounds: " + str(total_rounds))
-            ###print("Number of rounds: " + str(n_rounds))
-            self.FN(total_rounds, n_rounds)
+                self.FN(total_rounds, n_rounds)
+                        
             total_rounds += n_rounds
 
         ##do last key mixing 
@@ -261,54 +238,55 @@ class Donalves (object):
         self.key = key.encode()
         random.seed(key)
         self.key_sched = self.keyschedule()
+        
         ##do last key mixing
         for block in self.blocks:
             block = self.xor(block, self.key_sched[-1])
+            
         #see what operation will run first
         operation = self.random_number(1, True)
         total_rounds = 0
+        path = []
+        print("DECRYPTING")
         while total_rounds < 13:
             n_rounds = self.random_number(14 - total_rounds)
-            
-            self.IFN(14-total_rounds, n_rounds)
-            '''
-            if operation == 0:
-                operation = 1
-                self.IFN(n_rounds)
-            else:
-                operation = 0
-                self.ISPN(n_rounds)
-            '''
+            path.append([total_rounds, n_rounds])
             total_rounds += n_rounds
         
-        return self.reconstruct_message()
+        path = path[::-1]
+        reversed_path = [[14, path[0][1]]]
+        
+        for i in range(1, len(path)):
+            reversed_path.append([path[i - 1][0], path[i][1]])
         
         
-
-    
+        if len(path) % 2 == 0:
+            operation = not operation
         
-
-
+        for i in range(len(reversed_path)):
+            if operation == 0: #SPN
+                operation = 1 #switch operation
+                self.ISPN(reversed_path[i][0], reversed_path[i][1])
+                
+            else: #FN
+                operation = 0
+                self.IFN(reversed_path[i][0], reversed_path[i][1])
 
 
 def main():
     key = "ArROm+4MU+Sefz3r2h8BvhVMzptfZIxZ"
-    donalves = Donalves(msg="Hello world my name is joao", key=key)
-    #print(str(donalves.key_sched) + " "+ str(len(donalves.key_sched)))
-    ##print(donalves.blocks)
-    #donalves.back_to_64(donalves.expand_to_128(b'12345678'))
+    donalves = Donalves(msg="Amanhã será melhor", key=key)
+
+    print(donalves.reconstruct_message())
     
-    print(donalves.blocks)
     donalves.encrypt()
+    
     print(donalves.blocks)
-    msg_decprypted = donalves.decrypt(key)
-    #print(donalves.blocks)
-    print(msg_decprypted)
     
-
+    donalves.decrypt(key)
     
+    print(donalves.reconstruct_message())
     
-
 
     
 
