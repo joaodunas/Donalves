@@ -281,6 +281,7 @@ class Donalves (object):
             '''
             total_rounds += n_rounds
         
+        return self.reconstruct_message()
         
         
 
@@ -300,8 +301,9 @@ def main():
     print(donalves.blocks)
     donalves.encrypt()
     print(donalves.blocks)
-    donalves.decrypt(key)
-    print(donalves.blocks)
+    msg_decprypted = donalves.decrypt(key)
+    #print(donalves.blocks)
+    print(msg_decprypted)
     
 
     
