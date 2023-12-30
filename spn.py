@@ -25,6 +25,7 @@ class Donalves (object):
             blocks[-1] += bytes([missing_bytes] * missing_bytes)
         return blocks
 
+
     def reconstruct_message(self, encoding='utf-8'):
         original_msg = b''  # Initialize an empty bytes object
 
@@ -43,7 +44,8 @@ class Donalves (object):
         except UnicodeDecodeError:
             print("Error decoding message. Check the encoding.")
             return None
-        
+    
+    
     def keyschedule(self):
         return aeskeyschedule.key_schedule(self.key)
 
@@ -53,16 +55,40 @@ class Donalves (object):
             return random.randint(0,bellow)
         return random.randint(2, bellow) #2 because we need at least 2 rounds for Feistel Network
     
-
+    '''
     def SPN(self, number_of_rounds):
         spn = cryptanalysis.SPN(self.sbox, self.pbox, self.key, number_of_rounds)
         for i in range(len(self.blocks)):
             self.blocks[i] = spn.encrypt(self.blocks)
-
+    '''
+    def SPN(self, start_round, number_of_rounds):
+        for i in range(len(self.blocks)):
+            for j in range(number_of_rounds):
+                block = self.blocks[i]
+                # Start the round by mixing the subkey
+                block = self.xor(block, self.key_sched[start_round + j])
+                
+                # Apply the S-box
+                block = bytes([self.sbox[b] for b in block])
+                
+            self.blocks[i] = block
+    
+    
+    def ISPN(self, start_round, number_of_rounds):
+        for i in range(len(self.blocks)):
+            for j in range(number_of_rounds):
+                block = self.blocks[i]
+                # Start the round by mixing the subkey
+                block = self.xor(block, self.key_sched[start_round - j])
+                
+            self.blocks[i] = block
+    
+    '''
     def ISPN(self, number_of_rounds):
         spn = cryptanalysis.SPN(self.sbox, self.pbox, self.key, number_of_rounds)
         for i in range(len(self.blocks)):
             self.blocks[i] = spn.decrypt(self.blocks)
+    '''
 
     def expand_to_128(self, block): ##block comes with a size of 64 bits (8 bytes)
         #transform block from bytes to bits´
@@ -236,12 +262,6 @@ class Donalves (object):
             '''
             total_rounds += n_rounds
         
-        
-        
-
-    
-        
-
 
 
 
@@ -252,13 +272,29 @@ def main():
     ##print(donalves.blocks)
     #donalves.back_to_64(donalves.expand_to_128(b'12345678'))
     
+    '''
     print(donalves.blocks)
     donalves.encrypt()
     print(donalves.blocks)
     donalves.decrypt(key)
     print(donalves.blocks)
+    '''
     
-
+    
+    #donalves.SPN(0, 14)
+    print(donalves.blocks)
+    
+    print(reconstruct_message(donalves.blocks).decode('utf-8'))
+    
+    donalves.SPN(0, 14)
+    
+    print(donalves.blocks)
+    
+    print(reconstruct_message(donalves.blocks))
+    
+    #donalves.ISPN(14, 14)
+    #print(donalves.blocks)
+    #print(str(donalves.key_sched) + " "+ str(len(donalves.key_sched)))
     
     
 
