@@ -274,8 +274,9 @@ class Donalves (object):
 
 
 def main():
-    key = "ArROm+4MU+Sefz3r2h8BvhVMzptfZIxZ"
-    donalves = Donalves(msg="Amanhã será melhor", key=key)
+    #key = "ArROm+4MU+Sefz3r2h8BvhVMzptfZIxZ"
+    key = "akjsHSDNKNJASBDUWNKJ21b325436547"
+    donalves = Donalves(msg="Hello world my name is joao", key=key)
 
     print(donalves.reconstruct_message())
     
