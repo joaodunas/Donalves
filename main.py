@@ -2,7 +2,6 @@ import secrets
 import random
 import aeskeyschedule ##pip install aeskeyschedule
 
-##TODO mudar o metodo de pseudo random number generation para um mais seguro com seed para se poder desencriptar
 
 class Donalves (object):
     def __init__(self, msg, key):
