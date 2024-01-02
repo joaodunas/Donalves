@@ -239,7 +239,6 @@ class Donalves (object):
     def xor(self, a, b):
         return bytes([x ^ y for x, y in zip(a, b)])
 
-    ##TODO mudar o encrypt p dar return do cypher text
     def encrypt(self):
         #see what operation will run first
         operation = self.random_number(1, True)
@@ -262,10 +261,22 @@ class Donalves (object):
         for block in self.blocks:
             block = self.xor(block, self.key_sched[-1])
 
+        ##return cypher text which is the blocks concatenated
+        cypher_text = b''
+        for block in self.blocks:
+            cypher_text += block
+        
+        return cypher_text
+
 
     
-    ##TODO mudar o decrypt p receber o encrypted text e nao o self.blocks
-    def decrypt(self, key):
+    def decrypt(self, key, cypher_text=None):
+        if cypher_text == None:
+            pass
+        else:
+            self.msg = cypher_text
+            self.blocks = self.slice_in_blocks()
+
         self.key = key.encode()
         random.seed(key)
         self.key_sched = self.keyschedule()
@@ -307,12 +318,12 @@ class Donalves (object):
 def main():
     #key = "ArROm+4MU+Sefz3r2h8BvhVMzptfZIxZ"
     key = "akjsHSDNKNJASBDUWNKJ21b325436547"
-    donalves = Donalves(msg="Hello world my name is joao", key=key)
+    donalves = Donalves(msg="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam sed magna arcu. Curabitur ut nunc a justo faucibus luctus. Sed tempus turpis et semper ullamcorper. In ut urna nec lorem euismod convallis. Aliquam auctor ultrices lorem, in luctus arcu viverra nec. Nullam mauris lacus, egestas ac leo nec, sollicitudin mattis ante. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Donec sit amet lobortis sapien. Mauris eget dolor mattis, posuere ligula nec, rhoncus tellus. Maecenas vitae viverra risus, et malesuada lectus. Phasellus vulputate efficitur dolor.", key=key)
 
-    
+    '''    
     print(donalves.reconstruct_message())
     
-    donalves.encrypt()
+    print(donalves.encrypt())
     
     print(donalves.blocks)
     
@@ -321,8 +332,13 @@ def main():
     print(donalves.blocks)
     
     print(donalves.reconstruct_message())
+    '''
+
+    donalves.decrypt(key, donalves.encrypt())
+    print(donalves.reconstruct_message())
+
     
-    #donalves.back_to_64(donalves.expand_to_128(b'12345678'))
+    
 
     
 
