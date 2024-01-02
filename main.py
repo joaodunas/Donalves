@@ -114,40 +114,78 @@ class Donalves (object):
                 self.blocks[i] = bytes([self.sinv[b] for b in self.blocks[i]])
                 
                 self.blocks[i] = self.xor(self.blocks[i], self.key_sched[start_round - j - 1])
-                    
+
+    #similar do DES expansion function but repeating 2 bits on each side
+    expansion_function = [[30, 31, 0, 1, 2, 3, 4, 5],
+                          [2, 3, 4, 5, 6, 7, 8, 9],
+                           [6, 7, 8, 9, 10, 11, 12, 13],
+                           [10, 11, 12, 13, 14, 15, 16, 17],
+                           [14, 15, 16, 17, 18, 19, 20, 21],
+                           [18, 19, 20, 21, 22, 23, 24, 25],
+                           [22, 23, 24, 25, 26, 27, 28, 29],
+                           [26, 27, 28, 29, 30, 31, 0, 1]]     
+    
+    def expand_to_64(self, block): ##block comes with a size of 32 bits (4 bytes)
+        #transform block from bytes to bits
+        block = ''.join(format(x, '08b') for x in block)  ##08b means 8 bits for each character
+        #expand block to 64 bits
+        expanded_block = ''
+        for i in range(len(self.expansion_function)):
+            for j in range(len(self.expansion_function[i])):
+                expanded_block += block[self.expansion_function[i][j]]
+
+        return expanded_block
+
 
 
     def expand_to_128(self, block): ##block comes with a size of 64 bits (8 bytes)
-        #transform block from bytes to bits´
-        #print("before expand")
-        #print(block)
-        #print(len(block))
-        ##block = ''.join(format(x, '08b') for x in block)  ##08b means 8 bits for each character
-        #fill block with 0s to have 128 bits
-        block = block + bytes([0] * 8)
-        return block
+        #divide into 2 blocks of 32 bits
+        left, right = block[:4], block[4:]
+        #expand each block to 64 bits
+        left = self.expand_to_64(left)
+        right = self.expand_to_64(right)
+        #print(left+right)
+        final = left + right
+
+        return final.encode()
        
     
         
+    
+                    
 
-
-            
+    #just DES sbox concatenated 4 times to give a table 16x16
     des_SBOX = [[14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6 ,12, 5, 9, 0, 7],
                 [0, 15, 7, 4, 14 ,2 ,13 ,1 ,10 ,6 ,12 ,11 ,9 ,5 ,3 ,8],
                 [4, 1 ,14 ,8 ,13 ,6 ,2 ,11 ,15 ,12 ,9 ,7 ,3 ,10 ,5 ,0],
-                [15 ,12 ,8 ,2 ,4 ,9 ,1 ,7 ,5 ,11 ,3 ,14 ,10 ,0 ,6 ,13]]
+                [15 ,12 ,8 ,2 ,4 ,9 ,1 ,7 ,5 ,11 ,3 ,14 ,10 ,0 ,6 , 13],
+                [14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6 ,12, 5, 9, 0, 7],
+                [0, 15, 7, 4, 14 ,2 ,13 ,1 ,10 ,6 ,12 ,11 ,9 ,5 ,3 ,8],
+                [4, 1 ,14 ,8 ,13 ,6 ,2 ,11 ,15 ,12 ,9 ,7 ,3 ,10 ,5 ,0],
+                [15 ,12 ,8 ,2 ,4 ,9 ,1 ,7 ,5 ,11 ,3 ,14 ,10 ,0 ,6 , 13],
+                [14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6 ,12, 5, 9, 0, 7],
+                [0, 15, 7, 4, 14 ,2 ,13 ,1 ,10 ,6 ,12 ,11 ,9 ,5 ,3 ,8],
+                [4, 1 ,14 ,8 ,13 ,6 ,2 ,11 ,15 ,12 ,9 ,7 ,3 ,10 ,5 ,0],
+                [15 ,12 ,8 ,2 ,4 ,9 ,1 ,7 ,5 ,11 ,3 ,14 ,10 ,0 ,6 , 13],
+                [14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6 ,12, 5, 9, 0, 7],
+                [0, 15, 7, 4, 14 ,2 ,13 ,1 ,10 ,6 ,12 ,11 ,9 ,5 ,3 ,8],
+                [4, 1 ,14 ,8 ,13 ,6 ,2 ,11 ,15 ,12 ,9 ,7 ,3 ,10 ,5 ,0],
+                [15 ,12 ,8 ,2 ,4 ,9 ,1 ,7 ,5 ,11 ,3 ,14 ,10 ,0 ,6 , 13]]
     
 
 
     def back_to_64(self, block): ##block comes with a size of 128 bits (16 bytes)
         #transform block from bytes to bits
-        #print("before back")
+        block = ''.join(format(x, '08b') for x in block)  ##08b means 8 bits for each character
+        #divide into blocks of 8 bits
+        block = [block[i:i+8] for i in range(0, len(block), 8)]
+        #apply sbox to each block
         #print(block)
-       # print(len(block))
-        #block = ''.join(format(x, '08b') for x in block)
-        ##split block in blocks of 8 bits
-        #remove last 64 bits
-        block = block[:8]
+        for i in range(len(block)):
+            row = int(block[i][0] + block[i][1]+ block[i][6]+ block[i][7], 2)
+            col = int(block[i][2] + block[i][3] + block[i][4] + block[i][5], 2)
+            block[i] = self.des_SBOX[row][col]
+
         return block
         
         
@@ -276,6 +314,7 @@ def main():
     key = "akjsHSDNKNJASBDUWNKJ21b325436547"
     donalves = Donalves(msg="Hello world my name is joao", key=key)
 
+    
     print(donalves.reconstruct_message())
     
     donalves.encrypt()
@@ -283,9 +322,12 @@ def main():
     print(donalves.blocks)
     
     donalves.decrypt(key)
+
+    print(donalves.blocks)
     
     print(donalves.reconstruct_message())
     
+    #donalves.back_to_64(donalves.expand_to_128(b'12345678'))
 
     
 
