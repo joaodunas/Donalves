@@ -28,7 +28,7 @@ class Donalves (object):
         return blocks
 
 
-    def reconstruct_message(self, encoding='utf-8'):
+    def reconstruct_message(self):
         original_msg = b''  # Initialize an empty bytes object
 
         for block in self.blocks:
@@ -41,7 +41,7 @@ class Donalves (object):
 
         # Decode bytes to string
         try:
-            decoded_msg = original_msg.decode(encoding)
+            decoded_msg = original_msg.decode()
             return decoded_msg
         except UnicodeDecodeError:
             print("Error decoding message. Check the encoding.")
@@ -319,23 +319,24 @@ def main():
     key = "akjsHSDNKNJASBDUWNKJ21b325436547"
     donalves = Donalves(msg="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam sed magna arcu. Curabitur ut nunc a justo faucibus luctus. Sed tempus turpis et semper ullamcorper. In ut urna nec lorem euismod convallis. Aliquam auctor ultrices lorem, in luctus arcu viverra nec. Nullam mauris lacus, egestas ac leo nec, sollicitudin mattis ante. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Donec sit amet lobortis sapien. Mauris eget dolor mattis, posuere ligula nec, rhoncus tellus. Maecenas vitae viverra risus, et malesuada lectus. Phasellus vulputate efficitur dolor.", key=key)
 
-    '''    
-    print(donalves.reconstruct_message())
+    
     
     print(donalves.encrypt())
     
-    print(donalves.blocks)
-    
+    print("------------------")
+    print(donalves.reconstruct_message())
+    print("------------------")
     donalves.decrypt(key)
 
-    print(donalves.blocks)
+    #print(donalves.blocks)
     
     print(donalves.reconstruct_message())
+    
     '''
 
     donalves.decrypt(key, donalves.encrypt())
     print(donalves.reconstruct_message())
-
+'''
     
     
 
