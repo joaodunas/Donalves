@@ -84,15 +84,10 @@ class Donalves (object):
                         permuted_block[target_bit_index // 8] |= source_bit << (target_bit_index % 8)
 
                 self.blocks[i] = bytes(permuted_block)
-
-            #Apply the last key mixing
-            self.blocks[i] = self.xor(self.blocks[i], self.key_sched[-1])
     
     
     def ISPN(self, start_round, number_of_rounds):
-        for i in range(len(self.blocks)):
-            self.blocks[i] = self.xor(self.blocks[i], self.key_sched[-1])
-            
+        for i in range(len(self.blocks)):            
             for j in range(number_of_rounds):
                                 
                 block = self.blocks[i]
