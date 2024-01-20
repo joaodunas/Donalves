@@ -313,6 +313,8 @@ class Donalves (object):
                 operation = 0
                 self.IFN(reversed_path[i][0], reversed_path[i][1])
 
+        return self.reconstruct_message()
+
 
 def main():
     #key = "ArROm+4MU+Sefz3r2h8BvhVMzptfZIxZ"
@@ -326,11 +328,11 @@ def main():
     print("------------------")
     print(donalves.reconstruct_message())
     print("------------------")
-    donalves.decrypt(key)
+    print(donalves.decrypt(key))
 
     #print(donalves.blocks)
     
-    print(donalves.reconstruct_message())
+    
     
     '''
 
